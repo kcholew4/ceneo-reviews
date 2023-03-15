@@ -21,10 +21,12 @@ class Product(Resource):
                 "message": "product not found"
             }, 404
 
+        reviews = []
+
         for userPost in userPosts:
             extract = Extract(userPost)
 
-            review = Review(
+            reviews.append(Review(
                 id=extract.id(),
                 author=extract.author(),
                 recommendation=extract.recommendation(),
@@ -34,8 +36,21 @@ class Product(Resource):
                 votes=extract.votes(),
                 text=extract.text(),
                 features=extract.features()
-            )
+            ))
 
-            print(review)
+        def createResponse(review):
+            res = {}
 
-        return {"Hello": "world"}
+            res["id"] = review.id
+            res["author"] = review.author
+            res["text"] = review.text
+            res["verified"] = review.verified
+
+            return res
+
+        response = []
+
+        for review in reviews:
+            response.append(createResponse(review))
+
+        return response, 200

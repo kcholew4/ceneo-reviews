@@ -6,9 +6,12 @@ class Review:
     id: str
     author: str
     recommendation: str
-    scoreCount: int
+    score_count: int
     verified: bool
-    dates: tuple
-    votes: tuple
+    published_date: str
+    bought_date: str
+    votes_yes: int
+    votes_no: int
     text: str
-    features: tuple
+    pros: list
+    cons: list

@@ -2,15 +2,15 @@ import bs4
 
 
 class ExtractReview:
-    def __init__(self, user_post):
-        self.user_post = user_post
+    def __init__(self, review):
+        self.review = review
 
     def _get_time_tags(self):
-        return self.user_post.find(
+        return self.review.find(
             class_="user-post__published").find_all("time")
 
     def _get_review_feature_cols(self):
-        review_feature = self.user_post.find(class_="review-feature")
+        review_feature = self.review.find(class_="review-feature")
 
         if not review_feature:
             return []
@@ -29,23 +29,23 @@ class ExtractReview:
         return text
 
     def id(self):
-        return self.user_post["data-entry-id"]
+        return self.review["data-entry-id"]
 
     def author(self):
-        author = self.user_post.find(class_="user-post__author-name")
+        author = self.review.find(class_="user-post__author-name")
         return author.string.strip()
 
     def recommendation(self):
-        recomendation = self.user_post.find(
+        recomendation = self.review.find(
             class_="user-post__author-recomendation")
         return recomendation.find("em").string.strip()
 
     def score_count(self):
-        score_count = self.user_post.find(class_="user-post__score-count")
+        score_count = self.review.find(class_="user-post__score-count")
         return int(score_count.string[0])
 
     def verified(self):
-        return True if self.user_post.find(class_="review-pz") else False
+        return True if self.review.find(class_="review-pz") else False
 
     def published_date(self):
         time_tags = self._get_time_tags()
@@ -60,15 +60,15 @@ class ExtractReview:
         return time_tags[1]["datetime"]
 
     def votes_yes(self):
-        votes_yes = self.user_post.find(class_="vote-yes").find("span")
+        votes_yes = self.review.find(class_="vote-yes").find("span")
         return int(votes_yes.string)
 
     def votes_no(self):
-        votes_no = self.user_post.find(class_="vote-no").find("span")
+        votes_no = self.review.find(class_="vote-no").find("span")
         return int(votes_no.string)
 
     def text(self):
-        text = self.user_post.find(class_="user-post__text")
+        text = self.review.find(class_="user-post__text")
 
         return self._extract_text(text)
 

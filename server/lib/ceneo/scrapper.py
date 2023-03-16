@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 import requests
 
-from lib.ceneo.extract_review import ExtractReview
+from .helpers.extract_review import ExtractReview
 
 
 class Scrapper:
@@ -16,16 +16,17 @@ class Scrapper:
         if self.res.status_code != requests.codes.ok:
             return None
 
-        user_posts = self.soup.select(
+        reviews_container = self.soup.select(
             "div.user-post.user-post__card.js_product-review")
 
-        if len(user_posts) == 0:
-            return None
+        # No reviews :(
+        if len(reviews_container) == 0:
+            return []
 
         reviews = []
 
-        for user_post in user_posts:
-            extract = ExtractReview(user_post)
+        for single_review in reviews_container:
+            extract = ExtractReview(single_review)
 
             review = {
                 "id": extract.id(),
@@ -45,3 +46,10 @@ class Scrapper:
             reviews.append(review)
 
         return reviews
+
+    def get_product_name(self):
+        if self.res.status_code != requests.codes.ok:
+            return None
+
+        title = self.soup.find(class_="product-top__product-info__name")
+        return title.string.strip()

@@ -16,5 +16,9 @@ class Product(Resource):
             }
 
         reviews = scrapper.get_reviews()
+        product_name = scrapper.get_product_name()
 
-        return reviews, 200
+        return {
+            "name": product_name,
+            "reviews": reviews
+        }, 200

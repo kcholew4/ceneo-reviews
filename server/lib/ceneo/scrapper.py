@@ -2,24 +2,27 @@ from bs4 import BeautifulSoup
 import requests
 
 from lib.ceneo.extract_review import ExtractReview
-from lib.reviews_page import ReviewsPage
 
 
 class Scrapper:
-    def get_reviews_page(self, product_id, page=1) -> ReviewsPage | None:
-        url = f"https://www.ceneo.pl/{product_id}"
+    def __init__(self, url):
+        self.res = requests.get(url)
+        self.soup = BeautifulSoup(self.res.text, features="html.parser")
 
-        r = requests.get(url)
+    def status_code(self):
+        return self.res.status_code
 
-        soup = BeautifulSoup(r.text, features="html.parser")
+    def get_reviews(self):
+        if self.res.status_code != requests.codes.ok:
+            return None
 
-        user_posts = soup.select(
+        user_posts = self.soup.select(
             "div.user-post.user-post__card.js_product-review")
 
         if len(user_posts) == 0:
             return None
 
-        reviews_page = ReviewsPage(page)
+        reviews = []
 
         for user_post in user_posts:
             extract = ExtractReview(user_post)
@@ -39,6 +42,6 @@ class Scrapper:
                 "cons": extract.cons()
             }
 
-            reviews_page.add_review(review)
+            reviews.append(review)
 
-        return reviews_page
+        return reviews

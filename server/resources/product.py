@@ -5,6 +5,8 @@ from lib.ceneo.scrapper import Scrapper
 
 class Product(Resource):
     def get(self, id):
+        # Check the db first
+
         scrapper = Scrapper()
 
         page = scrapper.get_reviews_page(id)
@@ -15,4 +17,4 @@ class Product(Resource):
                 "message": "product not found"
             }
 
-        return page.get_reviews(), 200
+        return page.reviews, 200

@@ -7,6 +7,7 @@ app = Flask(__name__)
 api = Api(app)
 
 
+# i.e /api/products/138638987?page=2
 api.add_resource(Product, "/api/products/<id>")
 
 if __name__ == "__main__":

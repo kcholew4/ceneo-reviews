@@ -28,30 +28,30 @@ class ExtractReview:
 
         return text
 
-    def id(self) -> str:
+    def id(self):
         return self.user_post["data-entry-id"]
 
-    def author(self) -> str:
+    def author(self):
         author = self.user_post.find(class_="user-post__author-name")
         return author.string.strip()
 
-    def recommendation(self) -> str:
+    def recommendation(self):
         recomendation = self.user_post.find(
             class_="user-post__author-recomendation")
         return recomendation.find("em").string.strip()
 
-    def score_count(self) -> int:
+    def score_count(self):
         score_count = self.user_post.find(class_="user-post__score-count")
         return int(score_count.string[0])
 
-    def verified(self) -> bool:
+    def verified(self):
         return True if self.user_post.find(class_="review-pz") else False
 
-    def published_date(self) -> str:
+    def published_date(self):
         time_tags = self._get_time_tags()
         return time_tags[0]["datetime"]
 
-    def bought_date(self) -> str:
+    def bought_date(self):
         time_tags = self._get_time_tags()
 
         if len(time_tags) < 2:
@@ -59,20 +59,20 @@ class ExtractReview:
 
         return time_tags[1]["datetime"]
 
-    def votes_yes(self) -> int:
+    def votes_yes(self):
         votes_yes = self.user_post.find(class_="vote-yes").find("span")
         return int(votes_yes.string)
 
-    def votes_no(self) -> int:
+    def votes_no(self):
         votes_no = self.user_post.find(class_="vote-no").find("span")
         return int(votes_no.string)
 
-    def text(self) -> str:
+    def text(self):
         text = self.user_post.find(class_="user-post__text")
 
         return self._extract_text(text)
 
-    def pros(self) -> list:
+    def pros(self):
         review_feature_cols = self._get_review_feature_cols()
 
         if len(review_feature_cols) == 0:
@@ -82,7 +82,7 @@ class ExtractReview:
 
         return [item.string.strip() for item in pros_col.find_all(class_="review-feature__item")]
 
-    def cons(self) -> list:
+    def cons(self):
         review_feature_cols = self._get_review_feature_cols()
 
         if len(review_feature_cols) != 2:

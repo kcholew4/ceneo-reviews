@@ -1,31 +1,42 @@
 from bs4 import BeautifulSoup
 import requests
+from fake_useragent import UserAgent
 
 from .helpers.extract_review import ExtractReview
 
 
 class Scrapper:
-    def __init__(self, url):
-        self.res = requests.get(url)
+    def __init__(self):
+        self.s = requests.Session()
+
+        ua = UserAgent()
+        self.s.headers.update({"User-Agent": ua.chrome})
+
+    def query(self, url):
+        print(url)
+
+        self.res = self.s.get(url)
         self.soup = BeautifulSoup(self.res.text, features="html.parser")
 
-    def status_code(self):
         return self.res.status_code
 
-    def get_reviews(self):
-        if self.res.status_code != requests.codes.ok:
-            return None
+    def not_found(self):
+        return self.res.status_code == 404
 
-        reviews_container = self.soup.select(
+    def ok(self):
+        return self.res.status_code == requests.codes.ok
+
+    def reviews(self):
+        review_elements = self.soup.select(
             "div.user-post.user-post__card.js_product-review")
 
         # No reviews :(
-        if len(reviews_container) == 0:
+        if len(review_elements) == 0:
             return []
 
         reviews = []
 
-        for single_review in reviews_container:
+        for single_review in review_elements:
             extract = ExtractReview(single_review)
 
             review = {
@@ -47,9 +58,22 @@ class Scrapper:
 
         return reviews
 
-    def get_product_name(self):
-        if self.res.status_code != requests.codes.ok:
+    def product_name(self):
+        title = self.soup.find(class_="product-top__product-info__name")
+
+        if not title:
             return None
 
-        title = self.soup.find(class_="product-top__product-info__name")
         return title.string.strip()
+
+    def reviews_page(self):
+        pagination = self.soup.find(class_="pagination__item active")
+
+        if not pagination:
+            return 1
+
+        return int(pagination.find("span").string)
+
+    def reviews_has_next_page(self):
+        return True if self.soup.find(
+            class_="pagination__item pagination__next") else False

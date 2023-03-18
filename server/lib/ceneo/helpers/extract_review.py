@@ -33,12 +33,15 @@ class ExtractReview:
 
     def author(self):
         author = self.review.find(class_="user-post__author-name")
-        return author.string.strip()
+        return str(author.string).strip()
 
     def recommendation(self):
         recomendation = self.review.find(
             class_="user-post__author-recomendation")
-        return recomendation.find("em").string.strip()
+        if not recomendation:
+            return None
+
+        return str(recomendation.find("em").string).strip()
 
     def score_count(self):
         score_count = self.review.find(class_="user-post__score-count")
@@ -90,4 +93,4 @@ class ExtractReview:
 
         cons_col = review_feature_cols[1]
 
-        return [item.string.stip() for item in cons_col.find_all(class_="review-feature__item")]
+        return [item.string.strip() for item in cons_col.find_all(class_="review-feature__item")]

@@ -159,6 +159,18 @@ files = [
 ]
 
 [[package]]
+name = "fake-useragent"
+version = "1.1.1"
+description = "Up-to-date simple useragent faker with real world database"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "fake-useragent-1.1.1.tar.gz", hash = "sha256:579c72b18ba792a5bd54ba48e63e464d21933e336472c974091a6757f31bfcdc"},
+    {file = "fake_useragent-1.1.1-py3-none-any.whl", hash = "sha256:9f9b3667d3741ba81e34ebf9a6aa32658ecf7835499257826dd72642af629d59"},
+]
+
+[[package]]
 name = "flask"
 version = "2.2.3"
 description = "A simple framework for building complex web applications."
@@ -399,4 +411,4 @@ watchdog = ["watchdog"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "d37759fbaf21c9559fc76053c2643c9e66712dd81e6e710eea7df7481dae2e07"
+content-hash = "ce1c186eebde4471be2bf5a43fa08d24bb35d0fb1a9a49899f58405b14be906b"

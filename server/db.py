@@ -6,4 +6,4 @@ load_dotenv()
 
 connection_string = environ["MONGO_DB_CONNECTION_STRING"]
 client = MongoClient(connection_string)
-db = client["ceneo"]
+ceneo_db = client["ceneo"]

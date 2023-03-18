@@ -1,7 +1,6 @@
 from flask_restful import Resource
 
-from lib.ceneo.scrapper import Scrapper
-from db import db
+from lib.store import Store
 
 
 class Product(Resource):
@@ -12,26 +11,14 @@ class Product(Resource):
                 "message": "bad request"
             }, 400
 
-        products_collection = db["products"]
+        store = Store()
 
-        product = products_collection.find_one({
-            "product_id": id
-        }, {"_id": False})
+        product = store.get_product(id)
 
-        if product != None:
-            print("getting data from the db")
-            return product, 200
-
-        scrapper = Scrapper()
-
-        result = scrapper.get_product_data(id)
-
-        if result == None:
+        if product == None:
             return {
                 "ok": False,
                 "message": "product not found"
             }, 404
 
-        products_collection.insert_one(result)
-        del result["_id"]
-        return result, 200
+        return product, 200

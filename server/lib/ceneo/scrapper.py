@@ -8,72 +8,92 @@ from .helpers.extract_review import ExtractReview
 class Scrapper:
     def __init__(self):
         self.s = requests.Session()
-
         ua = UserAgent()
         self.s.headers.update({"User-Agent": ua.chrome})
 
-    def query(self, url):
-        print(url)
+    def _query(self, url):
+        print(f"querying url: {url}")
 
         self.res = self.s.get(url)
         self.soup = BeautifulSoup(self.res.text, features="html.parser")
 
         return self.res.status_code
 
-    def not_found(self):
-        return self.res.status_code == 404
+    def _extract_single_review(self, review):
+        extract = ExtractReview(review)
 
-    def ok(self):
-        return self.res.status_code == requests.codes.ok
+        return {
+            "id": extract.id(),
+            "author": extract.author(),
+            "recommendation": extract.recommendation(),
+            "score_count": extract.score_count(),
+            "verified": extract.verified(),
+            "published_date": extract.published_date(),
+            "bought_date": extract.bought_date(),
+            "votes_yes": extract.votes_yes(),
+            "votes_no": extract.votes_no(),
+            "text": extract.text(),
+            "pros": extract.pros(),
+            "cons": extract.cons()
+        }
 
-    def reviews(self):
+    def _extract_reviews(self):
         review_elements = self.soup.select(
             "div.user-post.user-post__card.js_product-review")
-
-        # No reviews :(
-        if len(review_elements) == 0:
-            return []
 
         reviews = []
 
         for single_review in review_elements:
-            extract = ExtractReview(single_review)
-
-            review = {
-                "id": extract.id(),
-                "author": extract.author(),
-                "recommendation": extract.recommendation(),
-                "score_count": extract.score_count(),
-                "verified": extract.verified(),
-                "published_date": extract.published_date(),
-                "bought_date": extract.bought_date(),
-                "votes_yes": extract.votes_yes(),
-                "votes_no": extract.votes_no(),
-                "text": extract.text(),
-                "pros": extract.pros(),
-                "cons": extract.cons()
-            }
-
-            reviews.append(review)
+            reviews.append(self._extract_single_review(single_review))
 
         return reviews
 
-    def product_name(self):
-        title = self.soup.find(class_="product-top__product-info__name")
+    def _extract_reviews_page(self):
+        page = self.soup.select_one(".pagination__item.active > span")
 
-        if not title:
+        return int(page.string) if page else 1
+
+    def _reviews_has_next_page(self):
+        return True if self.soup.select_one(".pagination__item.pagination__next") else False
+
+    def _extract_product_name(self):
+        name = self.soup.select_one(".product-top__product-info__name")
+
+        return name.string.strip() if name else None
+
+    def get_product_data(self, product_id):
+        status_code = self._query(f"https://www.ceneo.pl/{product_id}")
+
+        if status_code == 404:
             return None
 
-        return title.string.strip()
+        if status_code != 200:
+            return None  # TODO: Handle it
 
-    def reviews_page(self):
-        pagination = self.soup.find(class_="pagination__item active")
+        result = {
+            "name": self._extract_product_name(),
+            "partial_data": False,
+            "reviews": [
+                {
+                    "page": self._extract_reviews_page(),
+                    "has_next_page": self._reviews_has_next_page(),
+                    "data": [self._extract_reviews()]
+                }
+            ]
+        }
 
-        if not pagination:
-            return 1
+        while self._reviews_has_next_page():
+            status_code = self._query(
+                f"https://www.ceneo.pl/{product_id}/opinie-{self._extract_reviews_page() + 1}")
 
-        return int(pagination.find("span").string)
+            if status_code != 200 or (not self._extract_product_name()):
+                result["partial_data"] = True  # Happens when limit is exceeded
+                break
 
-    def reviews_has_next_page(self):
-        return True if self.soup.find(
-            class_="pagination__item pagination__next") else False
+            result["reviews"].append({
+                "page": self._extract_reviews_page(),
+                "has_next_page": self._reviews_has_next_page(),
+                "data": self._extract_reviews()
+            })
+
+        return result

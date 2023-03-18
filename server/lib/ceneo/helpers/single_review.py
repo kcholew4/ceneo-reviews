@@ -1,7 +1,7 @@
-from bs4.element import NavigableString
+from bs4 import NavigableString
 
 
-class ExtractReview:
+class SingleReviewHelper:
     ELEMENT_SELECTORS = {
         "author": ".user-post__author-name",
         "recommendation": ".user-post__author-recomendation > em",
@@ -16,14 +16,14 @@ class ExtractReview:
         "review_feature_item": ".review-feature__item"
     }
 
-    def __init__(self, review):
-        self.review = review
+    def __init__(self, review_element):
+        self.review_element = review_element
 
     def _get_time_tags(self):
-        return self.review.select(self.ELEMENT_SELECTORS["time_tag"])
+        return self.review_element.select(self.ELEMENT_SELECTORS["time_tag"])
 
     def _get_review_feature_cols(self):
-        review_feature = self.review.select_one(
+        review_feature = self.review_element.select_one(
             self.ELEMENT_SELECTORS["review_feature"])
 
         if not review_feature:
@@ -31,26 +31,27 @@ class ExtractReview:
 
         return review_feature.select(self.ELEMENT_SELECTORS["review_feature_col"])
 
-    def _extract_text(self, tag):
+    def _extract_text(self, node):
         text = []
 
-        if (type(tag) == NavigableString):
-            return [str(tag).strip()]
+        if (type(node) == NavigableString):
+            return [node.string.strip()]
 
-        for child in tag.children:
+        for child in node.children:
             text += self._extract_text(child)
 
         return text
 
     def id(self):
-        return self.review["data-entry-id"]
+        return self.review_element["data-entry-id"]
 
     def author(self):
-        author = self.review.select_one(self.ELEMENT_SELECTORS["author"])
+        author = self.review_element.select_one(
+            self.ELEMENT_SELECTORS["author"])
         return author.string.strip()
 
     def recommendation(self):
-        recomendation = self.review.select_one(
+        recomendation = self.review_element.select_one(
             self.ELEMENT_SELECTORS["recommendation"])
 
         if not recomendation:
@@ -59,12 +60,12 @@ class ExtractReview:
         return recomendation.string.strip()
 
     def score_count(self):
-        score_count = self.review.select_one(
+        score_count = self.review_element.select_one(
             self.ELEMENT_SELECTORS["score_count"])
         return int(score_count.string[0])
 
     def verified(self):
-        return True if self.review.select_one(self.ELEMENT_SELECTORS["verified"]) else False
+        return True if self.review_element.select_one(self.ELEMENT_SELECTORS["verified"]) else False
 
     def published_date(self):
         time_tags = self._get_time_tags()
@@ -79,15 +80,17 @@ class ExtractReview:
         return time_tags[1]["datetime"]
 
     def votes_yes(self):
-        votes_yes = self.review.select_one(self.ELEMENT_SELECTORS["votes_yes"])
+        votes_yes = self.review_element.select_one(
+            self.ELEMENT_SELECTORS["votes_yes"])
         return int(votes_yes.string)
 
     def votes_no(self):
-        votes_no = self.review.select_one(self.ELEMENT_SELECTORS["votes_no"])
+        votes_no = self.review_element.select_one(
+            self.ELEMENT_SELECTORS["votes_no"])
         return int(votes_no.string)
 
     def text(self):
-        text = self.review.select_one(self.ELEMENT_SELECTORS["text"])
+        text = self.review_element.select_one(self.ELEMENT_SELECTORS["text"])
 
         return self._extract_text(text)
 

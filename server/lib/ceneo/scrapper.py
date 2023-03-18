@@ -1,8 +1,9 @@
 from bs4 import BeautifulSoup
-import requests
 from fake_useragent import UserAgent
+import requests
 
-from .helpers.extract_review import ExtractReview
+from .helpers.product_info import ProductInfoHelper
+from .helpers.reviews import ReviewsHelper
 
 
 class Scrapper:
@@ -14,52 +15,10 @@ class Scrapper:
     def _query(self, url):
         print(f"querying url: {url}")
 
-        self.res = self.s.get(url)
-        self.soup = BeautifulSoup(self.res.text, features="html.parser")
+        res = self.s.get(url)
+        self.page = BeautifulSoup(res.text, features="html.parser")
 
-        return self.res.status_code
-
-    def _extract_single_review(self, review):
-        extract = ExtractReview(review)
-
-        return {
-            "id": extract.id(),
-            "author": extract.author(),
-            "recommendation": extract.recommendation(),
-            "score_count": extract.score_count(),
-            "verified": extract.verified(),
-            "published_date": extract.published_date(),
-            "bought_date": extract.bought_date(),
-            "votes_yes": extract.votes_yes(),
-            "votes_no": extract.votes_no(),
-            "text": extract.text(),
-            "pros": extract.pros(),
-            "cons": extract.cons()
-        }
-
-    def _extract_reviews(self):
-        review_elements = self.soup.select(
-            "div.user-post.user-post__card.js_product-review")
-
-        reviews = []
-
-        for single_review in review_elements:
-            reviews.append(self._extract_single_review(single_review))
-
-        return reviews
-
-    def _extract_reviews_page(self):
-        page = self.soup.select_one(".pagination__item.active > span")
-
-        return int(page.string) if page else 1
-
-    def _reviews_has_next_page(self):
-        return True if self.soup.select_one(".pagination__item.pagination__next") else False
-
-    def _extract_product_name(self):
-        name = self.soup.select_one(".product-top__product-info__name")
-
-        return name.string.strip() if name else None
+        return res.status_code
 
     def get_product_data(self, product_id):
         status_code = self._query(f"https://www.ceneo.pl/{product_id}")
@@ -70,31 +29,39 @@ class Scrapper:
         if status_code != 200:
             return None  # TODO: Handle it
 
+        product_info_helper = ProductInfoHelper(self.page)
+        reviews_helper = ReviewsHelper(self.page)
+
         result = {
             "product_id": product_id,
-            "name": self._extract_product_name(),
-            "partial_data": False,
+            "name": product_info_helper.name(),
+            "partial_reviews_data": False,
             "reviews": [
                 {
-                    "page": self._extract_reviews_page(),
-                    "has_next_page": self._reviews_has_next_page(),
-                    "data": self._extract_reviews()
+                    "page": reviews_helper.page_number(),
+                    "has_next_page": reviews_helper.has_next_page(),
+                    "data": reviews_helper.reviews()
                 }
             ]
         }
 
-        while self._reviews_has_next_page():
+        while reviews_helper.has_next_page():
             status_code = self._query(
-                f"https://www.ceneo.pl/{product_id}/opinie-{self._extract_reviews_page() + 1}")
+                f"https://www.ceneo.pl/{product_id}/opinie-{reviews_helper.page_number() + 1}")
 
-            if status_code != 200 or (not self._extract_product_name()):
-                result["partial_data"] = True  # Happens when limit is exceeded
+            product_info_helper = ProductInfoHelper(self.page)
+            reviews_helper = ReviewsHelper(self.page)
+
+            # Product name is not available when exceeded limit
+            if status_code != 200 or (not product_info_helper.name()):
+                print("limit exceeded")
+                result["partial_reviews_data"] = True
                 break
 
             result["reviews"].append({
-                "page": self._extract_reviews_page(),
-                "has_next_page": self._reviews_has_next_page(),
-                "data": self._extract_reviews()
+                "page": reviews_helper.page_number(),
+                "has_next_page": reviews_helper.has_next_page(),
+                "data": reviews_helper.reviews()
             })
 
         return result

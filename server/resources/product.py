@@ -6,11 +6,17 @@ from db import db
 
 class Product(Resource):
     def get(self, id):
+        if not id.isnumeric():
+            return {
+                "ok": False,
+                "message": "bad request"
+            }, 400
+
         products_collection = db["products"]
 
         product = products_collection.find_one({
             "product_id": id
-        }, {"_id": 0})
+        }, {"_id": False})
 
         if product != None:
             print("getting data from the db")
@@ -27,5 +33,5 @@ class Product(Resource):
             }, 404
 
         products_collection.insert_one(result)
-
+        del result["_id"]
         return result, 200

@@ -1,26 +1,40 @@
-import bs4
+from bs4.element import NavigableString
 
 
 class ExtractReview:
+    ELEMENT_SELECTORS = {
+        "author": ".user-post__author-name",
+        "recommendation": ".user-post__author-recomendation > em",
+        "score_count": ".user-post__score-count",
+        "verified": ".user-post__info > .review-pz",
+        "time_tag": ".user-post__published > time",
+        "votes_yes": ".vote-yes > span",
+        "votes_no": ".vote-no > span",
+        "text": ".user-post__text",
+        "review_feature": ".review-feature",
+        "review_feature_col": ".review-feature__col",
+        "review_feature_item": ".review-feature__item"
+    }
+
     def __init__(self, review):
         self.review = review
 
     def _get_time_tags(self):
-        return self.review.find(
-            class_="user-post__published").find_all("time")
+        return self.review.select(self.ELEMENT_SELECTORS["time_tag"])
 
     def _get_review_feature_cols(self):
-        review_feature = self.review.find(class_="review-feature")
+        review_feature = self.review.select_one(
+            self.ELEMENT_SELECTORS["review_feature"])
 
         if not review_feature:
             return []
 
-        return review_feature.find_all(class_="review-feature__col")
+        return review_feature.select(self.ELEMENT_SELECTORS["review_feature_col"])
 
     def _extract_text(self, tag):
         text = []
 
-        if (type(tag) == bs4.element.NavigableString):
+        if (type(tag) == NavigableString):
             return [str(tag).strip()]
 
         for child in tag.children:
@@ -32,23 +46,25 @@ class ExtractReview:
         return self.review["data-entry-id"]
 
     def author(self):
-        author = self.review.find(class_="user-post__author-name")
-        return str(author.string).strip()
+        author = self.review.select_one(self.ELEMENT_SELECTORS["author"])
+        return author.string.strip()
 
     def recommendation(self):
-        recomendation = self.review.find(
-            class_="user-post__author-recomendation")
+        recomendation = self.review.select_one(
+            self.ELEMENT_SELECTORS["recommendation"])
+
         if not recomendation:
             return None
 
-        return str(recomendation.find("em").string).strip()
+        return recomendation.string.strip()
 
     def score_count(self):
-        score_count = self.review.find(class_="user-post__score-count")
+        score_count = self.review.select_one(
+            self.ELEMENT_SELECTORS["score_count"])
         return int(score_count.string[0])
 
     def verified(self):
-        return True if self.review.find(class_="review-pz") else False
+        return True if self.review.select_one(self.ELEMENT_SELECTORS["verified"]) else False
 
     def published_date(self):
         time_tags = self._get_time_tags()
@@ -58,20 +74,20 @@ class ExtractReview:
         time_tags = self._get_time_tags()
 
         if len(time_tags) < 2:
-            return ""
+            return None
 
         return time_tags[1]["datetime"]
 
     def votes_yes(self):
-        votes_yes = self.review.find(class_="vote-yes").find("span")
+        votes_yes = self.review.select_one(self.ELEMENT_SELECTORS["votes_yes"])
         return int(votes_yes.string)
 
     def votes_no(self):
-        votes_no = self.review.find(class_="vote-no").find("span")
+        votes_no = self.review.select_one(self.ELEMENT_SELECTORS["votes_no"])
         return int(votes_no.string)
 
     def text(self):
-        text = self.review.find(class_="user-post__text")
+        text = self.review.select_one(self.ELEMENT_SELECTORS["text"])
 
         return self._extract_text(text)
 
@@ -83,7 +99,7 @@ class ExtractReview:
 
         pros_col = review_feature_cols[0]
 
-        return [item.string.strip() for item in pros_col.find_all(class_="review-feature__item")]
+        return [item.string.strip() for item in pros_col.select(self.ELEMENT_SELECTORS["review_feature_item"])]
 
     def cons(self):
         review_feature_cols = self._get_review_feature_cols()
@@ -93,4 +109,4 @@ class ExtractReview:
 
         cons_col = review_feature_cols[1]
 
-        return [item.string.strip() for item in cons_col.find_all(class_="review-feature__item")]
+        return [item.string.strip() for item in cons_col.select(self.ELEMENT_SELECTORS["review_feature_item"])]

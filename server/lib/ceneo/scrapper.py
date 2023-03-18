@@ -71,13 +71,14 @@ class Scrapper:
             return None  # TODO: Handle it
 
         result = {
+            "product_id": product_id,
             "name": self._extract_product_name(),
             "partial_data": False,
             "reviews": [
                 {
                     "page": self._extract_reviews_page(),
                     "has_next_page": self._reviews_has_next_page(),
-                    "data": [self._extract_reviews()]
+                    "data": self._extract_reviews()
                 }
             ]
         }

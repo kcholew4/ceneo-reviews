@@ -16,7 +16,7 @@ class Store:
 
     def _fetch_product(self, product_id):
         scrapper = Scrapper()
-        return scrapper.get_product_data(product_id)
+        return scrapper.get_product(product_id).get()
 
     def _replace_product(self, product_id, new_product):
         return self.collection.replace_one({"product_id": product_id}, new_product)
@@ -25,7 +25,8 @@ class Store:
         product = self._find_product(product_id)
 
         if product != None:
-            if product["partial_reviews_data"]:
+            print("getting product from the db")
+            if product["partial_data"]:
                 print("partial product data")
 
                 product = self._fetch_product(product_id)
@@ -42,3 +43,7 @@ class Store:
 
         del product["_id"]  # pymongo adds _id field
         return product
+
+    def get_stored_products(self):
+        result = self.collection.find({}, {"_id": False, "reviews": False})
+        return list(result)

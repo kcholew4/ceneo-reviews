@@ -1,4 +1,5 @@
 from .single_review import SingleReviewHelper
+from lib.ceneo.structs.review import Review
 
 
 class ReviewsHelper:
@@ -14,20 +15,20 @@ class ReviewsHelper:
     def _single_review(self, review_element):
         helper = SingleReviewHelper(review_element)
 
-        return {
-            "id": helper.id(),
-            "author": helper.author(),
-            "recommendation": helper.recommendation(),
-            "score_count": helper.score_count(),
-            "verified": helper.verified(),
-            "published_date": helper.published_date(),
-            "bought_date": helper.bought_date(),
-            "votes_yes": helper.votes_yes(),
-            "votes_no": helper.votes_no(),
-            "text": helper.text(),
-            "pros": helper.pros(),
-            "cons": helper.cons()
-        }
+        return Review(
+            id=helper.id(),
+            author=helper.author(),
+            recommendation=helper.recommendation(),
+            score_count=helper.score_count(),
+            verified=helper.verified(),
+            published_date=helper.published_date(),
+            bought_date=helper.bought_date(),
+            votes_yes=helper.votes_yes(),
+            votes_no=helper.votes_no(),
+            text=helper.text(),
+            pros=helper.pros(),
+            cons=helper.cons()
+        )
 
     def page_number(self):
         page_number = self.page.select_one(

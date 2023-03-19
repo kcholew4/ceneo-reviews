@@ -1,4 +1,5 @@
-from bs4 import NavigableString
+from bs4 import NavigableString, Tag
+import re
 
 
 class SingleReviewHelper:
@@ -16,7 +17,7 @@ class SingleReviewHelper:
         "review_feature_item": ".review-feature__item"
     }
 
-    def __init__(self, review_element):
+    def __init__(self, review_element: Tag):
         self.review_element = review_element
 
     def _get_time_tags(self):
@@ -62,7 +63,7 @@ class SingleReviewHelper:
     def score_count(self):
         score_count = self.review_element.select_one(
             self.ELEMENT_SELECTORS["score_count"])
-        return int(score_count.string[0])
+        return float(re.match(r".+(?=\/\d)", score_count.string)[0].replace(",", "."))
 
     def verified(self):
         return True if self.review_element.select_one(self.ELEMENT_SELECTORS["verified"]) else False

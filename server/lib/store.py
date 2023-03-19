@@ -16,7 +16,12 @@ class Store:
 
     def _fetch_product(self, product_id):
         scrapper = Scrapper()
-        return scrapper.get_product(product_id).get()
+        fetched_product = scrapper.get_product(product_id)
+
+        if not fetched_product:
+            return None
+
+        return fetched_product.get()
 
     def _replace_product(self, product_id, new_product):
         return self.collection.replace_one({"product_id": product_id}, new_product)

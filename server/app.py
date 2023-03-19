@@ -6,7 +6,7 @@ from resources.product import Product
 from resources.products_list import ProductsList
 
 app = Flask(__name__)
-api = Api(app)
+api = Api(app, catch_all_404s=True)
 CORS(app)
 
 api.add_resource(Product, "/api/products/<id>")

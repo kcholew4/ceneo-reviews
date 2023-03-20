@@ -27,7 +27,19 @@
 			{ key: 'cons', value: 'Wady' }
 		]}
 		rows={data.reviews}
-	/>
+	>
+		<svelte:fragment slot="cell" let:row let:cell>
+			{#if cell.key === 'pros' || cell.key === 'cons'}
+				<ul class="list">
+					{#each cell.value as single}
+						<li>{single}</li>
+					{/each}
+				</ul>
+			{:else}
+				{cell.value}
+			{/if}
+		</svelte:fragment>
+	</DataTable>
 </div>
 
 <style lang="scss">
@@ -45,5 +57,9 @@
 	.table-container {
 		max-width: 1924px;
 		margin: 0 auto;
+	}
+
+	.list {
+		padding-left: 0;
 	}
 </style>

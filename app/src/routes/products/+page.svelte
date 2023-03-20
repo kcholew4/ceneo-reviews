@@ -87,6 +87,7 @@
 				<div class="item">Liczba opinii: {single.overview.reviews_count}</div>
 				<div class="item">Liczba was: {single.overview.cons_count}</div>
 				<div class="item">Liczba zalet: {single.overview.pros_count}</div>
+				<div class="item">średnia ocena: {single.overview.average_score.toFixed(2)}</div>
 				<h5 style="margin-top: 1.5em;">Pobierz opinie:</h5>
 				<div style="padding-top: 1em;">
 					<Button kind="ghost" on:click={() => downloadJSON(single.product_id)}>json</Button>

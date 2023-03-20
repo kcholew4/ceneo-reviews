@@ -1,16 +1,18 @@
 <script>
+	import { goto } from '$app/navigation';
 	import {
 		DataTable,
 		Tag,
 		Pagination,
 		Toolbar,
 		ToolbarContent,
-		ToolbarSearch
+		ToolbarSearch,
+		Button
 	} from 'carbon-components-svelte';
 
 	export let data;
 
-	const rows = data.reviews.map((review, index) => ({
+	let rows = data.reviews.map((review, index) => ({
 		...review,
 		id: index,
 		review_id: review.id,
@@ -29,6 +31,7 @@
 
 <div class="container">
 	<h2>{data.name}</h2>
+	<Button on:click={() => goto(`/products/${data.product_id}/statistics`)}>Idź do wykresów</Button>
 </div>
 <div class="table-container">
 	<DataTable

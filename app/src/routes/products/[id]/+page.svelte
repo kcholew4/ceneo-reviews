@@ -1,5 +1,12 @@
 <script>
-	import { DataTable, Tag, Pagination } from 'carbon-components-svelte';
+	import {
+		DataTable,
+		Tag,
+		Pagination,
+		Toolbar,
+		ToolbarContent,
+		ToolbarSearch
+	} from 'carbon-components-svelte';
 
 	export let data;
 
@@ -17,6 +24,7 @@
 
 	let pageSize = 20;
 	let page = 1;
+	let filteredRowIds = [];
 </script>
 
 <div class="container">
@@ -47,11 +55,16 @@
 		{pageSize}
 		{page}
 	>
+		<Toolbar>
+			<ToolbarContent>
+				<ToolbarSearch persistent shouldFilterRows bind:filteredRowIds placeholder="Szukaj..." />
+			</ToolbarContent>
+		</Toolbar>
 		<svelte:fragment slot="expanded-row" let:row>
 			<div style="max-width: 640px;">{row.text}</div>
 		</svelte:fragment>
 	</DataTable>
-	<Pagination bind:pageSize bind:page totalItems={data.reviews.length} pageSizeInputDisabled />
+	<Pagination bind:pageSize bind:page totalItems={filteredRowIds.length} pageSizeInputDisabled />
 </div>
 
 <style lang="scss">

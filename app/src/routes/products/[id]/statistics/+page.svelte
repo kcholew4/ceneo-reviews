@@ -48,7 +48,7 @@
 			.sort((a, b) => parseFloat(a.group) - parseFloat(b.group));
 	};
 
-	console.log(createScoreGroups());
+	// console.log(createScoreGroups());
 </script>
 
 <Grid>

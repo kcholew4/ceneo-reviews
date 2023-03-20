@@ -7,12 +7,17 @@
 		Toolbar,
 		ToolbarContent,
 		ToolbarSearch,
-		Button
+		Button,
+		Select,
+		SelectItem,
+		Grid,
+		Row,
+		Column
 	} from 'carbon-components-svelte';
 
 	export let data;
 
-	let rows = data.reviews.map((review, index) => ({
+	const og_rows = data.reviews.map((review, index) => ({
 		...review,
 		id: index,
 		review_id: review.id,
@@ -22,16 +27,43 @@
 		cons: review.cons.join(', ')
 	}));
 
+	let rows = [...og_rows];
+
 	console.log(rows);
 
 	let pageSize = 20;
 	let page = 1;
 	let filteredRowIds = [];
+
+	const filterRecommendation = (text) => {
+		if (text === 'default') {
+			return (rows = [...og_rows]);
+		}
+
+		rows = og_rows.filter((row) => row.recommendation === text);
+		console.log(filteredRowIds);
+	};
+
+	$: console.log(filteredRowIds);
 </script>
 
 <div class="container">
 	<h2>{data.name}</h2>
 	<Button on:click={() => goto(`/products/${data.product_id}/statistics`)}>Idź do wykresów</Button>
+</div>
+<div class="filters container">
+	<Grid>
+		<Row>
+			<Column lg={{ span: 4 }}>
+				<Select labelText="Rekomendacja" on:change={(e) => filterRecommendation(e.target.value)}>
+					<SelectItem value="default" text="Domyślnie" />
+					<SelectItem value="Polecam" text="Polecam" />
+					<SelectItem value="Nie polecam" text="Nie polecam" />
+					<SelectItem value="Brak" text="Brak" />
+				</Select>
+			</Column>
+		</Row>
+	</Grid>
 </div>
 <div class="table-container">
 	<DataTable
@@ -80,6 +112,8 @@
 			margin-top: 1em;
 			margin-bottom: 1em;
 		}
+
+		margin-bottom: 2.5em;
 	}
 
 	.table-container {

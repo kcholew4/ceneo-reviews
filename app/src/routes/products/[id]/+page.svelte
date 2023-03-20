@@ -1,9 +1,22 @@
 <script>
-	import { DataTable } from 'carbon-components-svelte';
+	import { DataTable, Tag, Pagination } from 'carbon-components-svelte';
 
 	export let data;
 
-	console.log(data.reviews);
+	const rows = data.reviews.map((review, index) => ({
+		...review,
+		id: index,
+		review_id: review.id,
+		recommendation: review.recommendation ?? 'Brak',
+		verified: review.verified ? 'Tak' : 'Nie',
+		pros: review.pros.join(', '),
+		cons: review.cons.join(', ')
+	}));
+
+	console.log(rows);
+
+	let pageSize = 20;
+	let page = 1;
 </script>
 
 <div class="container">
@@ -12,34 +25,33 @@
 <div class="table-container">
 	<DataTable
 		sortable
+		expandable
 		headers={[
-			{ key: 'id', value: 'ID' },
+			{ key: 'review_id', value: 'ID' },
 			{ key: 'author', value: 'Autor' },
 			{ key: 'recommendation', value: 'Rekomendacja' },
 			{ key: 'score_count', value: 'Ocena' },
-			{ key: 'verified', value: 'Potwierdzona zakupem' },
+			{
+				key: 'verified',
+				value: 'Potwierdzona zakupem'
+			},
 			{ key: 'published_date', value: 'Data opublikowania' },
 			{ key: 'bought_date', value: 'Data zakupu' },
 			{ key: 'votes_yes', value: 'Głosy za' },
 			{ key: 'votes_no', value: 'Głosy przeciw' },
-			{ key: 'text', value: 'Treść' },
+			// { key: 'text', value: 'Treść' },
 			{ key: 'pros', value: 'Zalety' },
 			{ key: 'cons', value: 'Wady' }
 		]}
-		rows={data.reviews}
+		{rows}
+		{pageSize}
+		{page}
 	>
-		<svelte:fragment slot="cell" let:row let:cell>
-			{#if cell.key === 'pros' || cell.key === 'cons'}
-				<ul class="list">
-					{#each cell.value as single}
-						<li>{single}</li>
-					{/each}
-				</ul>
-			{:else}
-				{cell.value}
-			{/if}
+		<svelte:fragment slot="expanded-row" let:row>
+			<div style="max-width: 640px;">{row.text}</div>
 		</svelte:fragment>
 	</DataTable>
+	<Pagination bind:pageSize bind:page totalItems={data.reviews.length} pageSizeInputDisabled />
 </div>
 
 <style lang="scss">
@@ -57,9 +69,5 @@
 	.table-container {
 		max-width: 1924px;
 		margin: 0 auto;
-	}
-
-	.list {
-		padding-left: 0;
 	}
 </style>

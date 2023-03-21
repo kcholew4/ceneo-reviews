@@ -12,39 +12,141 @@
 		SelectItem,
 		Grid,
 		Row,
-		Column
+		Column,
+		MultiSelect,
+		FormGroup
 	} from 'carbon-components-svelte';
+	import _ from 'lodash';
 
 	export let data;
 
-	const og_rows = data.reviews.map((review, index) => ({
+	const dateTimeFormat = new Intl.DateTimeFormat('default', {
+		year: 'numeric',
+		month: 'numeric',
+		day: 'numeric',
+		hour: 'numeric',
+		minute: 'numeric',
+		second: 'numeric',
+		hour12: false
+	});
+
+	const rows = data.reviews.map((review, index) => ({
 		...review,
 		id: index,
 		review_id: review.id,
 		recommendation: review.recommendation ?? 'Brak',
 		verified: review.verified ? 'Tak' : 'Nie',
-		pros: review.pros.join(', '),
-		cons: review.cons.join(', ')
+		published_date: new Date(review.published_date).valueOf() ?? 0,
+		bought_date: new Date(review.bought_date).valueOf() ?? 0
 	}));
 
-	let rows = [...og_rows];
-
-	console.log(rows);
-
+	let displayedRows = rows;
 	let pageSize = 20;
 	let page = 1;
 	let filteredRowIds = [];
 
-	const filterRecommendation = (text) => {
-		if (text === 'default') {
-			return (rows = [...og_rows]);
+	const availableScores = rows.reduce((acc, current) => {
+		const score = current.score_count;
+		if (acc.includes(score)) {
+			return acc;
 		}
 
-		rows = og_rows.filter((row) => row.recommendation === text);
-		console.log(filteredRowIds);
+		return [...acc, score];
+	}, []);
+
+	const prosList = rows.reduce((acc, current) => {
+		current.pros.forEach((single) => {
+			if (!acc.includes(single)) {
+				acc.push(single);
+			}
+		});
+
+		return acc;
+	}, []);
+
+	const consList = rows.reduce((acc, current) => {
+		current.cons.forEach((single) => {
+			if (!acc.includes(single)) {
+				acc.push(single);
+			}
+		});
+
+		return acc;
+	}, []);
+
+	// console.log(prosList, consList);
+
+	const createRecommendationFilter = (recommendation) => (rows) => {
+		if (recommendation === 'default') {
+			return rows;
+		}
+
+		return rows.filter((row) => row.recommendation === recommendation);
 	};
 
-	$: console.log(filteredRowIds);
+	const createScoreFilter = (scores) => (rows) => {
+		if (scores.length === 0) {
+			return rows;
+		}
+
+		return rows.filter((row) => scores.includes(row.score_count.toString()));
+	};
+
+	const createVerifiedFilter = (verified) => (rows) => {
+		if (verified === 'default') {
+			return rows;
+		}
+
+		return rows.filter((row) => verified.includes(row.verified));
+	};
+
+	const createProsFilter = (pros) => (rows) => {
+		if (pros.length === 0) {
+			return rows;
+		}
+
+		return rows.filter((row) => row.pros.some((value) => pros.includes(value)));
+	};
+
+	const createConsFilter = (cons) => (rows) => {
+		if (cons.length === 0) {
+			return rows;
+		}
+
+		return rows.filter((row) => row.cons.some((value) => cons.includes(value)));
+	};
+
+	let filters = {};
+
+	const addFilter = (name, filter) => (filters[name] = filter);
+
+	const applyFilters = (filters) => {
+		let result = rows;
+
+		Object.values(filters).forEach((filter) => {
+			result = filter(result);
+		});
+
+		return result;
+	};
+
+	$: displayedRows = applyFilters(filters);
+
+	let recommendationSelect = undefined;
+	let verfiedSelect = undefined;
+	let scoreSelectedIds = [];
+	let prosSelectedIds = [];
+	let consSelectedIds = [];
+
+	const resetFilters = () => {
+		recommendationSelect = undefined;
+		verfiedSelect = undefined;
+		scoreSelectedIds = [];
+		prosSelectedIds = [];
+		consSelectedIds = [];
+
+		filters = {};
+	};
 </script>
 
 <div class="container">
@@ -53,14 +155,69 @@
 </div>
 <div class="filters container">
 	<Grid>
-		<Row>
+		<Row padding>
 			<Column lg={{ span: 4 }}>
-				<Select labelText="Rekomendacja" on:change={(e) => filterRecommendation(e.target.value)}>
-					<SelectItem value="default" text="Domyślnie" />
+				<Select
+					labelText="Rekomendacja"
+					bind:selected={recommendationSelect}
+					on:change={(e) => addFilter('recommendation', createRecommendationFilter(e.target.value))}
+				>
+					<SelectItem value="default" text="Wszystkie" />
 					<SelectItem value="Polecam" text="Polecam" />
 					<SelectItem value="Nie polecam" text="Nie polecam" />
 					<SelectItem value="Brak" text="Brak" />
 				</Select>
+			</Column>
+			<Column lg={{ span: 4 }}>
+				<Select
+					labelText="Potwierdzona zakupem"
+					bind:selected={verfiedSelect}
+					on:change={(e) => addFilter('verfied', createVerifiedFilter(e.target.value))}
+				>
+					<SelectItem value="default" text="Wszystkie" />
+					<SelectItem value="Tak" text="Tak" />
+					<SelectItem value="Nie" text="Nie" />
+				</Select>
+			</Column>
+			<Column lg={{ span: 8 }}>
+				<MultiSelect
+					titleText="Ocena"
+					bind:selectedIds={scoreSelectedIds}
+					label="Wybierz ocene..."
+					items={availableScores.map((single, index) => ({ id: index, text: single.toString() }))}
+					on:select={({ detail }) => {
+						addFilter('score', createScoreFilter(detail.selected.map(({ text }) => text)));
+					}}
+				/>
+			</Column>
+		</Row>
+		<Row padding>
+			<Column lg={{ span: 8 }}>
+				<MultiSelect
+					titleText="Zalety"
+					bind:selectedIds={prosSelectedIds}
+					label="Wybierz zalety..."
+					items={prosList.map((single, index) => ({ id: index, text: single }))}
+					on:select={({ detail }) => {
+						addFilter('pros', createProsFilter(detail.selected.map(({ text }) => text)));
+					}}
+				/>
+			</Column>
+			<Column lg={{ span: 8 }}>
+				<MultiSelect
+					titleText="Wady"
+					bind:selectedIds={consSelectedIds}
+					label="Wybierz wady..."
+					items={consList.map((single, index) => ({ id: index, text: single }))}
+					on:select={({ detail }) => {
+						addFilter('pros', createConsFilter(detail.selected.map(({ text }) => text)));
+					}}
+				/>
+			</Column>
+		</Row>
+		<Row padding>
+			<Column style="display: flex; justify-content: end;">
+				<Button kind="tertiary" on:click={() => resetFilters()}>Wyczyść filtry</Button>
 			</Column>
 		</Row>
 	</Grid>
@@ -78,21 +235,46 @@
 				key: 'verified',
 				value: 'Potwierdzona zakupem'
 			},
-			{ key: 'published_date', value: 'Data opublikowania' },
-			{ key: 'bought_date', value: 'Data zakupu' },
+			{
+				key: 'published_date',
+				value: 'Data opublikowania',
+				display: (value) =>
+					value ? dateTimeFormat.format(new Date(parseInt(value))) : 'Brak danych'
+			},
+			{
+				key: 'bought_date',
+				value: 'Data zakupu',
+				display: (value) =>
+					value ? dateTimeFormat.format(new Date(parseInt(value))) : 'Brak danych'
+			},
 			{ key: 'votes_yes', value: 'Głosy za' },
 			{ key: 'votes_no', value: 'Głosy przeciw' },
 			// { key: 'text', value: 'Treść' },
-			{ key: 'pros', value: 'Zalety' },
-			{ key: 'cons', value: 'Wady' }
+			{ key: 'pros', value: 'Zalety', display: (pros) => pros.join(', ') },
+			{ key: 'cons', value: 'Wady', display: (cons) => cons.join(', ') }
 		]}
-		{rows}
+		rows={displayedRows}
 		{pageSize}
 		{page}
 	>
 		<Toolbar>
 			<ToolbarContent>
-				<ToolbarSearch persistent shouldFilterRows bind:filteredRowIds placeholder="Szukaj..." />
+				<ToolbarSearch
+					persistent
+					shouldFilterRows={(row, value) => {
+						const filterableRow = {
+							...row,
+							pros: row.pros.join(', '),
+							cons: row.cons.join(', ')
+						};
+
+						return Object.values(filterableRow).some((cell) =>
+							String(cell).toLowerCase().includes(value.toLowerCase())
+						);
+					}}
+					bind:filteredRowIds
+					placeholder="Szukaj..."
+				/>
 			</ToolbarContent>
 		</Toolbar>
 		<svelte:fragment slot="expanded-row" let:row>

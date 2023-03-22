@@ -10,7 +10,7 @@
 	const { list } = data;
 
 	const fetchProduct = async (id) => {
-		const res = await fetch(`http://${env.PUBLIC_API_URL}/api/products/${id}`);
+		const res = await fetch(`https://${env.PUBLIC_API_URL}/api/products/${id}`);
 
 		if (!res.ok) {
 			console.log('error saving file');

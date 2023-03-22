@@ -44,6 +44,10 @@ class Store:
         if product == None:
             return None
 
+        # Product found but is protected with captcha
+        if product["name"] == None:
+            return 2  # Ugly fix
+
         self._store_product(product)
 
         del product["_id"]  # pymongo adds _id field

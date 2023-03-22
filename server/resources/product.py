@@ -21,4 +21,10 @@ class Product(Resource):
                 "message": "product not found"
             }, 404
 
+        if product == 2:
+            return {
+                "ok": False,
+                "message": "product protected with captcha"
+            }, 503
+
         return product, 200

@@ -6,7 +6,7 @@
 	let id = null;
 
 	const productExists = async (id) => {
-		const url = `http://${env.PUBLIC_API_URL}/api/products/${id}/check`;
+		const url = `https://${env.PUBLIC_API_URL}/api/products/${id}/check`;
 
 		const res = await fetch(url);
 

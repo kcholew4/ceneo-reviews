@@ -6,7 +6,7 @@ const apiUrl = env.PUBLIC_API_URL;
 export async function load({ fetch, params }) {
 	const id = params.id;
 
-	const res = await fetch(`http://${apiUrl}/api/products/${id}`);
+	const res = await fetch(`https://${apiUrl}/api/products/${id}`);
 
 	if (!res.ok) {
 		if (res.status === 404) {

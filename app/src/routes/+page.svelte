@@ -5,22 +5,22 @@
 	</div>
 	<div class="content">
 		<h1>Opis działania aplikacji</h1>
-		<p>Nalezy prześć na stronę ekstrakcji, podać id produktu i kliknąć przycisk</p>
+		<p>Nalezy prześć na stronę ekstrakcji, podać id produktu i kliknąć przycisk.</p>
 	</div>
 	<div class="content">
 		<h1>Zastosowane biblioteki</h1>
 		<p>
-			Po stronie backendu zastosowano m.in bibliotekę Flask z Flask RESTful, beautiful soup,
-			requests oraz pymongo. Na stronie front end zastosowano metaframework SvelteKi do zbudowanie
+			Po stronie backendu zastosowano m.in bibliotekę Flask z Flask RESTful, beautifulsoup, requests
+			oraz pymongo. Na stronie front end zastosowano metaframework SvelteKit do zbudowanie
 			reaktywnej aplikacji SPA oraz Carbon Design Components do stworzenia interfejsu uzytkownika.
 		</p>
 	</div>
 	<div class="content">
 		<h1>Zastosowane podejścia</h1>
 		<p>
-			Zastosowano podejście API first czyli w pythonie stworzone zostało RESTowe API HTTP, które
-			jest wykorzystywane w aplikacji stworznej SvelteKit. Dlatego obie częsci aplikacji mozna
-			hostować odzielnie.
+			Zastosowano podejście API first czyli w pythonie stworzone zostało RESTowe API, które jest
+			wykorzystywane w aplikacji stworznej w SvelteKit. Dlatego obie częsci aplikacji mozna hostować
+			odzielnie.
 		</p>
 	</div>
 </div>

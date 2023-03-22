@@ -25,6 +25,6 @@ class Product(Resource):
             return {
                 "ok": False,
                 "message": "product protected with captcha"
-            }, 503
+            }, 206
 
         return product, 200

@@ -8,12 +8,21 @@ export async function load({ fetch, params }) {
 
 	const res = await fetch(`https://${apiUrl}/api/products/${id}`);
 
+	if (res.status === 404) {
+		throw error(404, 'Nie znaleziono produktu');
+	}
+
 	if (!res.ok) {
-		if (res.status === 404) {
-			throw error(404, 'Nie znaleziono produktu');
-		}
 		throw error(500, 'Wystąpił błąd');
 	}
 
-	return await res.json();
+	if (res.status === 206) {
+		throw error(503, 'Nie można pobrać produktu. Napotkano zabezpieczenie przeciw robotom.');
+	}
+
+	const json = await res.json();
+
+	console.log(res.status);
+
+	return json;
 }

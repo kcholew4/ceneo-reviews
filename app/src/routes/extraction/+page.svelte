@@ -1,7 +1,14 @@
 <script>
 	import { env } from '$env/dynamic/public';
 	import { goto } from '$app/navigation';
-	import { TextInput, Button, FormGroup, Form, ToastNotification } from 'carbon-components-svelte';
+	import {
+		TextInput,
+		Button,
+		FormGroup,
+		Form,
+		ToastNotification,
+		InlineLoading
+	} from 'carbon-components-svelte';
 
 	let id = null;
 
@@ -18,6 +25,8 @@
 	};
 
 	let showNotFound = false;
+
+	let loading = false;
 </script>
 
 {#if showNotFound}
@@ -40,20 +49,26 @@
 	<Form
 		on:submit={async (e) => {
 			e.preventDefault();
+			loading = true;
 
 			if (!(await productExists(id))) {
 				console.log('product does not exists');
+				loading = false;
 				showNotFound = true;
 				return;
 			}
 
-			goto(`/products/${id}`);
+			goto(`/products/${id}`).then(() => (loading = false));
 		}}
 	>
 		<FormGroup>
 			<TextInput labelText="ID produktu" placeholder="Wpisz ID produktu..." bind:value={id} />
 		</FormGroup>
-		<Button type="submit">Wyślij</Button>
+		{#if loading}
+			<InlineLoading description="Pobieranie opinii..." />
+		{:else}
+			<Button type="submit">Wyślij</Button>
+		{/if}
 	</Form>
 </div>
 

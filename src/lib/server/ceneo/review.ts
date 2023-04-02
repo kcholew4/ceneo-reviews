@@ -113,7 +113,7 @@ export class Review {
       return null;
     }
 
-    const consCol = featureCols.first();
+    const consCol = featureCols.last();
 
     return consCol.text().trim().split("\n").slice(1).map((item) => item.trim())
   }

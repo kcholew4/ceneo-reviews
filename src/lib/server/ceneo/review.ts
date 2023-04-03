@@ -17,15 +17,41 @@ export class Review {
 
   private $review: Cheerio<AnyNode>;
 
+  id: string;
+  author: string;
+  recommendation: string;
+  score: number;
+  verified: boolean;
+  published: Date;
+  bought: Date | null;
+  votesYes: number;
+  votesNo: number;
+  text: string;
+  pros: string[] | null;
+  cons: string[] | null;
+
   constructor($review: Cheerio<AnyNode>) {
     this.$review = $review
+
+    this.id = $review.attr("data-entry-id") ?? "";
+    this.author = $review.find(Review.SELECTORS.author).text().trim();
+    this.recommendation = $review.find(Review.SELECTORS.recommendation).text().trim();
+    this.score = this.extractScore();
+    this.verified = $review.is(Review.SELECTORS.verified);
+    this.published = this.extractPublished();
+    this.bought = this.extractBought();
+    this.votesYes = parseInt(this.$review.find(Review.SELECTORS.votes_yes).text());
+    this.votesNo = parseInt(this.$review.find(Review.SELECTORS.votes_no).text());
+    this.text = $review.find(Review.SELECTORS.text).text().trim(); // TODO: More advanced text extraction
+    this.pros = this.extractPros();
+    this.cons = this.extractCons();
   }
 
-  private timeTags() {
+  private extractTimeTags() {
     return this.$review.find(Review.SELECTORS.time_tag)
   }
 
-  private reviewFeatureCols() {
+  private extractReviewFeatureCols() {
     const reviewFeature = this.$review.find(Review.SELECTORS.review_feature);
 
     if (reviewFeature.length === 0) {
@@ -35,40 +61,24 @@ export class Review {
     return reviewFeature.find(Review.SELECTORS.review_feature_col);
   }
 
-  id() {
-    return this.$review.attr("data-entry-id") ?? null;
-  }
-
-  author() {
-    return this.$review.find(Review.SELECTORS.author).text().trim();
-  }
-
-  recommendation() {
-    return this.$review.find(Review.SELECTORS.recommendation).text().trim();
-  }
-
-  score() {
+  private extractScore() {
     const raw = this.$review.find(Review.SELECTORS.score_count).text();
     const score = raw.match(/(?<score>.+)(?=\/\d)/)?.groups?.score;
 
     if (!score) {
-      return null;
+      return 0;
     }
 
     return parseFloat(score.replaceAll(",", "."));
   }
 
-  verified() {
-    return this.$review.is(Review.SELECTORS.verified)
-  }
-
-  published() {
-    const timeTags = this.timeTags();
+  private extractPublished() {
+    const timeTags = this.extractTimeTags();
     return new Date(timeTags.first().attr("datetime") ?? 0)
   }
 
-  bought() {
-    const timeTags = this.timeTags();
+  private extractBought() {
+    const timeTags = this.extractTimeTags();
 
     if (timeTags.length < 2) {
       return null;
@@ -77,20 +87,9 @@ export class Review {
     return new Date(timeTags.last().attr("datetime") ?? 0)
   }
 
-  votesYes() {
-    return parseInt(this.$review.find(Review.SELECTORS.votes_yes).text())
-  }
-
-  votesNo() {
-    return parseInt(this.$review.find(Review.SELECTORS.votes_no).text())
-  }
-
-  text() {
-    return this.$review.find(Review.SELECTORS.text).text().trim();
-  }
-
-  pros() {
-    const featureCols = this.reviewFeatureCols();
+  // TODO: Don't use string manipulation to extract pros and cons
+  private extractPros() {
+    const featureCols = this.extractReviewFeatureCols();
 
     if (!featureCols) {
       return null;
@@ -102,8 +101,8 @@ export class Review {
     return prosCol.text().trim().split("\n").slice(1).map((item) => item.trim());
   }
 
-  cons() {
-    const featureCols = this.reviewFeatureCols();
+  private extractCons() {
+    const featureCols = this.extractReviewFeatureCols();
 
     if (!featureCols) {
       return null;

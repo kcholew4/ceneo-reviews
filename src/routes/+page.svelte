@@ -50,7 +50,7 @@
 				</div>
 			{/if}
 			<div class="form-container">
-				<Form method="POST" action="?/validate">
+				<Form method="POST" action="?/search">
 					<TextInput name="productId" labelText="ID produktu" placeholder="Podaj ID produktu..." />
 					<div class="submit-button">
 						<Button class="submit-button" type="submit">Wyszukaj produkt</Button>

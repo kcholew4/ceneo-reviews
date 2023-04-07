@@ -27,8 +27,8 @@ export class Review {
   votesYes: number;
   votesNo: number;
   text: string;
-  pros: string[] | null;
-  cons: string[] | null;
+  pros: string[];
+  cons: string[];
 
   constructor($review: Cheerio<AnyNode>) {
     this.$review = $review
@@ -121,7 +121,7 @@ export class Review {
     const featureCols = this.getReviewFeatureCols();
 
     if (!featureCols) {
-      return null;
+      return [];
     }
 
     const prosCol = featureCols.first();
@@ -134,11 +134,11 @@ export class Review {
     const featureCols = this.getReviewFeatureCols();
 
     if (!featureCols) {
-      return null;
+      return [];
     }
 
     if (featureCols.length < 2) {
-      return null;
+      return [];
     }
 
     const consCol = featureCols.last();

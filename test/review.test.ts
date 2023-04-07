@@ -1,7 +1,7 @@
 import * as cheerio from "cheerio";
 import { describe, beforeAll, test, expect } from "vitest";
 import { SINGLE_REVIEW } from "./data";
-import { Review } from "../src/lib/server/ceneo/review";
+import { Review } from "../src/lib/ceneo/review";
 
 describe("Review", () => {
   let review: Review;
@@ -56,6 +56,6 @@ describe("Review", () => {
   })
 
   test("get cons", () => {
-    expect(review.cons).toBe(null)
+    expect(review.cons).toMatchObject([])
   })
 })

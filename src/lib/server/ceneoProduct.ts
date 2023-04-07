@@ -1,6 +1,6 @@
 import * as cheerio from "cheerio";
-import type { Review } from "./ceneo/review.js";
-import { ProductPage } from "./ceneo/productPage.js";
+import type { Review } from "../ceneo/review.js";
+import { ProductPage } from "../ceneo/productPage.js";
 
 export class CeneoProduct {
   private static ID_PATTERN = /^\d+$/

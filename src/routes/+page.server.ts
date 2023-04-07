@@ -3,7 +3,7 @@ import { CeneoProduct } from '$lib/server/ceneoProduct.js';
 
 
 export const actions = {
-	validate: async ({ request }) => {
+	search: async ({ request }) => {
 		const data = await request.formData();
 
 		const productId = data.get('productId')?.toString() ?? "";

@@ -1,5 +1,6 @@
+import * as cheerio from "cheerio";
 import type { Review } from "./ceneo/review.js";
-import { ProductPageScrapper } from "./ceneo/scrapper.js";
+import { ProductPage } from "./ceneo/productPage.js";
 
 export class CeneoProduct {
   private static ID_PATTERN = /^\d+$/
@@ -9,8 +10,8 @@ export class CeneoProduct {
 
   id: string;
   name = "";
-  partialExtraction = false;
   reviews: Review[] = [];
+  partialExtraction = false;
 
   constructor(id: string) {
     if (!CeneoProduct.validateId(id)) {
@@ -45,33 +46,39 @@ export class CeneoProduct {
     return true;
   }
 
-  async get() {
-    const scrapper = new ProductPageScrapper();
+  private async getPageContent({ reviewsPage }: { reviewsPage: number }) {
+    const queryUrl = reviewsPage > 0 ? `${this.baseUrl}/opinie-${reviewsPage}` : this.baseUrl;
 
-    console.log(this.baseUrl);
+    const response = await fetch(queryUrl);
 
-    await scrapper.query(this.baseUrl);
-
-    this.name = scrapper.extractProductName() ?? "";
-    this.reviews.push(...scrapper.extractReviews());
-
-    if (!scrapper.hasNextReviewsPage()) {
-      return;
+    if (!response.ok) {
+      throw new Error(`Error fetching the page: ${queryUrl} (${response.status})`);
     }
 
-    do {
-      const nextPageUrl = `${this.baseUrl}/opinie-${scrapper.extractReviewsPageNumber() + 1}`;
+    return await response.text();
+  }
 
-      await scrapper.query(nextPageUrl);
+  async get() {
+    let content = await this.getPageContent({ reviewsPage: 0 });
+    let productPage = new ProductPage(cheerio.load(content));
 
-      console.log(nextPageUrl);
+    this.name = productPage.name
+    this.reviews.push(...productPage.reviews);
 
-      if (scrapper.extractProductName() === null) {
-        this.partialExtraction = true;
-        break;
+    for(;;) {
+      if (productPage.nextReviewsPage === null) {
+        return;
       }
 
-      this.reviews.push(...scrapper.extractReviews());
-    } while(scrapper.hasNextReviewsPage())
+      content = await this.getPageContent({ reviewsPage: productPage.nextReviewsPage })
+      productPage = new ProductPage(cheerio.load(content));
+
+      if (productPage.captchaProtected) {
+        this.partialExtraction = true;
+        return;
+      }
+
+      this.reviews.push(...productPage.reviews);
+    }
   }
 }

@@ -1,7 +1,6 @@
 import { fail } from '@sveltejs/kit';
 import { CeneoProduct } from '$lib/server/ceneoProduct.js';
 
-
 export const actions = {
 	search: async ({ request }) => {
 		const data = await request.formData();
@@ -16,6 +15,10 @@ export const actions = {
 			return fail(400, { ok: false, productId, doesNotExist: true })
 		}
 
-		return { ok: true, productId }
+		const ceneoProduct = new CeneoProduct(productId);
+
+		const product = await ceneoProduct.getProduct();
+
+		return { ok: true, productId, product }
 	}
 };

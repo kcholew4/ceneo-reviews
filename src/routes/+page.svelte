@@ -9,26 +9,30 @@
 		InlineNotification
 	} from 'carbon-components-svelte';
 	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
 
 	export let form;
 
 	let formErrorMessage = '';
 
-	if (form?.ok === false) {
-		if (form.doesNotExist) {
-			formErrorMessage = 'Produkt o podanym id nie istnieje.';
-		} else if (form.invalidId) {
-			formErrorMessage = 'Podane id jest nieprawidłowe.';
+	onMount(() => {
+		if (form?.ok === false) {
+			if (form.doesNotExist) {
+				formErrorMessage = 'Produkt o podanym id nie istnieje.';
+			} else if (form.invalidId) {
+				formErrorMessage = 'Podane id jest nieprawidłowe.';
+			}
 		}
-	}
 
-	if (form?.ok === true) {
-		const { productId } = form;
+		if (form?.ok === true) {
+			const { productId } = form;
 
-		goto(`/product/${productId}`).catch(() => {
-			formErrorMessage = 'Wystąpił nieoczekiwany błąd, spróbuj ponownie pózniej.';
-		});
-	}
+			// Maybe redirect on the server is a better idea
+			goto(`/product/${productId}`).catch(() => {
+				formErrorMessage = 'Wystąpił nieoczekiwany błąd, spróbuj ponownie pózniej.';
+			});
+		}
+	});
 </script>
 
 <Grid>

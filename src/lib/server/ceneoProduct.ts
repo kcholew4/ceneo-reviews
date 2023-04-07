@@ -1,6 +1,7 @@
 import * as cheerio from "cheerio";
 import type { Review } from "../ceneo/review.js";
 import { ProductPage } from "../ceneo/productPage.js";
+import * as db from "./db";
 
 export class CeneoProduct {
   private static ID_PATTERN = /^\d+$/
@@ -58,7 +59,7 @@ export class CeneoProduct {
     return await response.text();
   }
 
-  async get() {
+  async fetch() {
     let content = await this.getPageContent({ reviewsPage: 0 });
     let productPage = new ProductPage(cheerio.load(content));
 
@@ -80,5 +81,16 @@ export class CeneoProduct {
 
       this.reviews.push(...productPage.reviews);
     }
+  }
+
+  async getProduct() {
+    let product = await db.getProductById(this.id);
+
+    if (!product) {
+      await this.fetch();
+      product = await db.insertProduct(this);
+    }
+
+    return product;
   }
 }

@@ -15,14 +15,14 @@
 
 <Header platformName="ceneo-reviews" expandedByDefault={false} bind:isSideNavOpen>
 	<HeaderNav>
-		<HeaderNavItem text="Szukaj" />
-		<HeaderNavItem text="Lista produktów" />
+		<HeaderNavItem text="Szukaj" href="/" />
+		<HeaderNavItem text="Lista produktów" href="/products" />
 	</HeaderNav>
 </Header>
 
 <SideNav bind:isOpen={isSideNavOpen}>
 	<SideNavItems>
-		<SideNavLink text="Szukaj" />
+		<SideNavLink text="Szukaj" href="/" />
 		<SideNavLink text="Lista produktów" />
 	</SideNavItems>
 </SideNav>

@@ -28,7 +28,7 @@
 			const { productId } = form;
 
 			// Maybe redirect on the server is a better idea
-			goto(`/product/${productId}`).catch(() => {
+			goto(`/products/${productId}`).catch(() => {
 				formErrorMessage = 'Wystąpił nieoczekiwany błąd, spróbuj ponownie pózniej.';
 			});
 		}
@@ -39,11 +39,7 @@
 	<Row>
 		<Column lg={8}>
 			<h1>Pobierz opinie z portalu Ceneo.pl</h1>
-			<p>
-				Lorem ipsum dolor sit amet consectetur adipisicing elit. Explicabo aliquid ab, laudantium
-				sequi nulla corrupti quasi esse officiis non provident molestias praesentium in maiores
-				vitae distinctio autem nisi quod harum.
-			</p>
+			<p>Wyszukaj produkt wpisując jego ID.</p>
 		</Column>
 	</Row>
 	<Row>

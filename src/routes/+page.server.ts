@@ -5,20 +5,19 @@ export const actions = {
 	search: async ({ request }) => {
 		const data = await request.formData();
 
-		const productId = data.get('productId')?.toString() ?? "";
+		const productId = data.get('productId')?.toString() ?? '';
 
 		if (!CeneoProduct.validateId(productId)) {
-			return fail(400, { ok: false, productId, invalidId: true })
-		}
-
-		if (!await CeneoProduct.exists(productId)) {
-			return fail(400, { ok: false, productId, doesNotExist: true })
+			return fail(400, { ok: false, productId, invalidId: true });
 		}
 
 		const ceneoProduct = new CeneoProduct(productId);
-
 		const product = await ceneoProduct.getProduct();
 
-		return { ok: true, productId, product }
+		if (!product) {
+			return fail(400, { ok: false, productId, doesNotExist: true });
+		}
+
+		return { ok: true, productId, product };
 	}
 };

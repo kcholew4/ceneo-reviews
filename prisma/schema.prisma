@@ -15,6 +15,7 @@ model Product {
   ceneoProductId    String   @unique
   name              String
   partialExtraction Boolean
+  overview          Overview
   reviews           Review[]
 }
 
@@ -31,4 +32,11 @@ type Review {
   text           String
   pros           String[]
   cons           String[]
+}
+
+type Overview {
+  reviewsCount Int
+  prosCount    Int
+  consCount    Int
+  averageScore Float
 }

@@ -11,6 +11,12 @@ export const insertProduct = async (product: CeneoProduct) => {
       ceneoProductId: product.id,
       name: product.name,
       partialExtraction: product.partialExtraction,
+      overview: {
+        reviewsCount: product.reviewsCount,
+        prosCount: product.prosCount,
+        consCount: product.consCount,
+        averageScore: product.averageScore
+      },
       reviews: product.reviews.map((review) => ({
         ceneoReviewId: review.id,
         author: review.author,

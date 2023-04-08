@@ -1,33 +1,38 @@
-# ceneo-reviews
+# create-svelte
 
-Display, filter and display statistics about products found on Ceneo.pl
+Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte).
 
-> Deployed version does not work correctly because of Ceneo.pl anti-bot protection. Apparently DigitalOcean's ip addresses are blacklisted.
+## Creating a project
 
-### How to run
+If you're seeing this, you've probably already done this step. Congrats!
 
-`app/` and `server/` are seperate modules and can be deployed separately.
+```bash
+# create a new project in the current directory
+npm create svelte@latest
 
-#### 1. Download the repo
-```
-git clone https://github.com/kcholew4/ceneo-reviews/
-cd ceneo-reviews
-```
-
-#### 2. Run server module
-```
-cd server
-pip install -r requirements.txt
-#Set MONGO_DB_CONNECTION_STRING env variable to mongo db connection string (you can put this inside .env file)
-#Set PORT env variable
-python app.py
+# create a new project in my-app
+npm create svelte@latest my-app
 ```
 
-#### 3. Run app module
+## Developing
 
-```
-cd ../app
-npm install
-#Set PUBLIC_API_URL env variable to the api url (can be put inside .env file)
+Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+
+```bash
 npm run dev
+
+# or start the server and open the app in a new browser tab
+npm run dev -- --open
 ```
+
+## Building
+
+To create a production version of your app:
+
+```bash
+npm run build
+```
+
+You can preview the production build with `npm run preview`.
+
+> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.

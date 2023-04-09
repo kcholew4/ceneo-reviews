@@ -85,7 +85,7 @@ export class Review {
 	}
 
 	private extractVerified() {
-		return this.$review.is(Review.SELECTORS.verified);
+		return this.$review.find(Review.SELECTORS.verified).length !== 0;
 	}
 
 	private extractPublished() {

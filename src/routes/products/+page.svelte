@@ -2,8 +2,6 @@
 	import { Grid, Row, Column, Tile, Link } from 'carbon-components-svelte';
 
 	export let data;
-
-	console.log(data);
 </script>
 
 <Grid>

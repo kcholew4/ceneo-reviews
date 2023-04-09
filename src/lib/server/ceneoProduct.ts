@@ -123,6 +123,7 @@ export class CeneoProduct {
 	async getProduct() {
 		let product = await db.getProductById(this.id);
 
+		//TODO: Deal with partial extraction
 		if (!product) {
 			await this.fetch();
 

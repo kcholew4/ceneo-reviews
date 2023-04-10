@@ -1,18 +1,18 @@
-import type { CheerioAPI } from "cheerio";
-import { Review } from "./review.js"
+import type { CheerioAPI } from 'cheerio';
+import { Review } from './review.js';
 
 export class ProductPage {
   private static SELECTORS = {
-    review: "div.user-post.user-post__card.js_product-review",
-    product_name: ".product-top__product-info__name",
-    next_page: ".pagination__item.pagination__next",
-    page_number: ".pagination__item.active > span"
-  }
+    review: 'div.user-post.user-post__card.js_product-review',
+    product_name: '.product-top__product-info__name',
+    next_page: '.pagination__item.pagination__next',
+    page_number: '.pagination__item.active > span'
+  };
 
   private $: CheerioAPI;
 
   captchaProtected = false;
-  name = "";
+  name = '';
   reviews: Review[] = [];
   reviewsPage: number | null = null;
   hasNextReviewsPage = false;
@@ -34,13 +34,13 @@ export class ProductPage {
     this.nextReviewsPage = this.getNextReviewsPage();
   }
 
-  private extractProductName() { 
+  private extractProductName() {
     const $name = this.$(ProductPage.SELECTORS.product_name);
     return $name.text();
   }
 
   private extractReviews() {
-    const $reviews = this.$(ProductPage.SELECTORS.review)
+    const $reviews = this.$(ProductPage.SELECTORS.review);
 
     const reviews: Review[] = [];
 
@@ -52,7 +52,7 @@ export class ProductPage {
       }
 
       reviews.push(new Review($review));
-    })
+    });
 
     return reviews;
   }

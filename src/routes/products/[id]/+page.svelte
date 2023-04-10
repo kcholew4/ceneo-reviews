@@ -11,6 +11,8 @@
 		MultiSelect
 	} from 'carbon-components-svelte';
 	import { ReviewsProperties } from '$lib/helpers/reviewsProperties';
+	import { ReviewsFilters, type FilterFunction } from '$lib/helpers/reviewsFilters';
+	import type { Review } from '@prisma/client';
 
 	export let data;
 
@@ -23,12 +25,14 @@
 	let modalHeading = '';
 	let modalContent = '';
 
-	let rows = reviews.map((review) => ({
-		...review,
-		id: review.ceneoReviewId,
-		recommendation: review.recommendation ? review.recommendation : 'Brak',
-		verified: review.verified ? 'Tak' : 'Nie'
-	}));
+	const reviewsToRows = (reviews: Review[]) => {
+		return reviews.map((review) => ({
+			...review,
+			id: review.ceneoReviewId,
+			recommendation: review.recommendation ? review.recommendation : 'Brak',
+			verified: review.verified ? 'Tak' : 'Nie'
+		}));
+	};
 
 	const formatDate = (date: Date | null) => {
 		if (!date) {
@@ -38,6 +42,7 @@
 		return new Intl.DateTimeFormat().format(date);
 	};
 
+	const reviewsFilters = new ReviewsFilters(reviews);
 	const reviewsProperties = new ReviewsProperties(reviews);
 
 	const recommendations = reviewsProperties.recommendations();
@@ -45,6 +50,17 @@
 	const scores = reviewsProperties.scores();
 	const pros = reviewsProperties.pros();
 	const cons = reviewsProperties.cons();
+
+	let rows: ReturnType<typeof reviewsToRows>;
+
+	let filters: {
+		[index: string]: FilterFunction;
+	} = {};
+
+	$: {
+		const displayedReviews = reviewsFilters.apply(Object.values(filters));
+		rows = reviewsToRows(displayedReviews);
+	}
 </script>
 
 <Modal bind:open={modalOpen} bind:modalHeading passiveModal>{modalContent}</Modal>
@@ -67,6 +83,16 @@
 						text: value ? value : 'Brak'
 					}))
 				]}
+				on:select={(event) => {
+					const id = event.detail.selectedId;
+
+					if (id < 0) {
+						delete filters.recommendation;
+						return (filters = filters);
+					}
+
+					filters.recommendation = ReviewsFilters.createRecommendationFilter(recommendations[id]);
+				}}
 			/>
 		</Column>
 		<Column lg={4}>
@@ -80,6 +106,16 @@
 						text: value ? 'Tak' : 'Nie'
 					}))
 				]}
+				on:select={(event) => {
+					const id = event.detail.selectedId;
+
+					if (id < 0) {
+						delete filters.verified;
+						return (filters = filters);
+					}
+
+					filters.verified = ReviewsFilters.createVerifiedFilter(verifiedOptions[id]);
+				}}
 			/>
 		</Column>
 		<Column lg={4}>
@@ -90,6 +126,16 @@
 					id: index,
 					text: value.toString()
 				}))}
+				on:select={(event) => {
+					if (event.detail.selectedIds.length === 0) {
+						delete filters.scores;
+						return (filters = filters);
+					}
+
+					filters.scores = ReviewsFilters.createScoresFilter(
+						event.detail.selected.map((single) => parseFloat(single.text))
+					);
+				}}
 			/>
 		</Column>
 	</Row>
@@ -102,6 +148,16 @@
 					id: index,
 					text: value
 				}))}
+				on:select={(event) => {
+					if (event.detail.selectedIds.length === 0) {
+						delete filters.pros;
+						return (filters = filters);
+					}
+
+					filters.pros = ReviewsFilters.createProsFilter(
+						event.detail.selected.map(({ text }) => text)
+					);
+				}}
 			/>
 		</Column>
 		<Column lg={6}>
@@ -112,6 +168,16 @@
 					id: index,
 					text: value
 				}))}
+				on:select={(event) => {
+					if (event.detail.selectedIds.length === 0) {
+						delete filters.cons;
+						return (filters = filters);
+					}
+
+					filters.cons = ReviewsFilters.createConsFilter(
+						event.detail.selected.map(({ text }) => text)
+					);
+				}}
 			/>
 		</Column>
 	</Row>

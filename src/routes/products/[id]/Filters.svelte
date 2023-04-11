@@ -1,6 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import { Grid, Row, Column, Dropdown, MultiSelect } from 'carbon-components-svelte';
+  import { writable } from 'svelte/store';
+  import { Grid, Row, Column, Dropdown, MultiSelect, Button } from 'carbon-components-svelte';
   import { ReviewsProperties } from '$lib/helpers/reviewsProperties';
   import { ReviewsFilters, type FilterFunction } from '$lib/helpers/reviewsFilters';
   import type { Review } from '@prisma/client';
@@ -16,15 +17,64 @@
   const pros = reviewsProperties.pros();
   const cons = reviewsProperties.cons();
 
-  let filters: {
+  const defaultSelected = () => {
+    return {
+      recommendation: -1,
+      verified: -1,
+      scores: [],
+      pros: [],
+      cons: []
+    };
+  };
+
+  let selected = defaultSelected();
+
+  const filters = writable<{
     [index: string]: FilterFunction;
-  } = {};
+  }>({});
+
+  const removeFilter = (filterName: string) => {
+    filters.update((value) => {
+      delete value[filterName];
+      return value;
+    });
+  };
+
+  const addFilter = (filterName: string, filterFunction: FilterFunction) => {
+    filters.update((value) => {
+      value[filterName] = filterFunction;
+      return value;
+    });
+  };
 
   const dispatch = createEventDispatcher();
 
-  $: dispatch('filter', {
-    reviews: reviewsFilters.apply(Object.values(filters))
+  filters.subscribe((value) => {
+    dispatch('filter', {
+      reviews: reviewsFilters.apply(Object.values(value))
+    });
   });
+
+  // For some reason this cannot be in on:select in Dropdows
+
+  const recommendationSelect = (index: number) => {
+    if (index < 0) {
+      return removeFilter('recommendation');
+    }
+
+    addFilter('recommendation', ReviewsFilters.createRecommendationFilter(recommendations[index]));
+  };
+
+  const verifiedSelect = (index: number) => {
+    if (index < 0) {
+      return removeFilter('verified');
+    }
+
+    addFilter('verified', ReviewsFilters.createVerifiedFilter(verifiedOptions[index]));
+  };
+
+  $: recommendationSelect(selected.recommendation);
+  $: verifiedSelect(selected.verified);
 </script>
 
 <Grid>
@@ -32,7 +82,7 @@
     <Column lg={4}>
       <Dropdown
         titleText="Rekomendacja"
-        selectedId={-1}
+        bind:selectedId={selected.recommendation}
         items={[
           { id: -1, text: 'Wszystkie' },
           ...recommendations.map((value, index) => ({
@@ -40,22 +90,12 @@
             text: value ? value : 'Brak'
           }))
         ]}
-        on:select={(event) => {
-          const id = event.detail.selectedId;
-
-          if (id < 0) {
-            delete filters.recommendation;
-            return (filters = filters);
-          }
-
-          filters.recommendation = ReviewsFilters.createRecommendationFilter(recommendations[id]);
-        }}
       />
     </Column>
     <Column lg={4}>
       <Dropdown
         titleText="Potwierdzona zakupen"
-        selectedId={-1}
+        bind:selectedId={selected.verified}
         items={[
           { id: -1, text: 'Wszystkie' },
           ...verifiedOptions.map((value, index) => ({
@@ -63,34 +103,28 @@
             text: value ? 'Tak' : 'Nie'
           }))
         ]}
-        on:select={(event) => {
-          const id = event.detail.selectedId;
-
-          if (id < 0) {
-            delete filters.verified;
-            return (filters = filters);
-          }
-
-          filters.verified = ReviewsFilters.createVerifiedFilter(verifiedOptions[id]);
-        }}
       />
     </Column>
     <Column lg={4}>
       <MultiSelect
         titleText="Ocena"
         label="Wybierz oceny..."
+        bind:selectedIds={selected.scores}
         items={scores.map((value, index) => ({
           id: index,
           text: value.toString()
         }))}
         on:select={(event) => {
+          console.log('asdfsadf');
           if (event.detail.selectedIds.length === 0) {
-            delete filters.scores;
-            return (filters = filters);
+            return removeFilter('scores');
           }
 
-          filters.scores = ReviewsFilters.createScoresFilter(
-            event.detail.selected.map((single) => parseFloat(single.text))
+          addFilter(
+            'scores',
+            ReviewsFilters.createScoresFilter(
+              event.detail.selected.map((single) => parseFloat(single.text))
+            )
           );
         }}
       />
@@ -101,18 +135,19 @@
       <MultiSelect
         titleText="Zalety"
         label="Wybierz zalety..."
+        bind:selectedIds={selected.pros}
         items={pros.map((value, index) => ({
           id: index,
           text: value
         }))}
         on:select={(event) => {
           if (event.detail.selectedIds.length === 0) {
-            delete filters.pros;
-            return (filters = filters);
+            return removeFilter('pros');
           }
 
-          filters.pros = ReviewsFilters.createProsFilter(
-            event.detail.selected.map(({ text }) => text)
+          addFilter(
+            'pros',
+            ReviewsFilters.createProsFilter(event.detail.selected.map(({ text }) => text))
           );
         }}
       />
@@ -121,21 +156,33 @@
       <MultiSelect
         titleText="Wady"
         label="Wybierz zalety..."
+        bind:selectedIds={selected.cons}
         items={cons.map((value, index) => ({
           id: index,
           text: value
         }))}
         on:select={(event) => {
           if (event.detail.selectedIds.length === 0) {
-            delete filters.cons;
-            return (filters = filters);
+            return removeFilter('cons');
           }
 
-          filters.cons = ReviewsFilters.createConsFilter(
-            event.detail.selected.map(({ text }) => text)
+          addFilter(
+            'cons',
+            ReviewsFilters.createConsFilter(event.detail.selected.map(({ text }) => text))
           );
         }}
       />
+    </Column>
+  </Row>
+  <Row padding>
+    <Column>
+      <Button
+        kind="tertiary"
+        on:click={(event) => {
+          event.preventDefault();
+          selected = defaultSelected();
+        }}>Wyczyść filtry</Button
+      >
     </Column>
   </Row>
 </Grid>

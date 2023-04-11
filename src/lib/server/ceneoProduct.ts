@@ -123,7 +123,6 @@ export class CeneoProduct {
   async getProduct() {
     let product = await db.getProductById(this.id);
 
-    //TODO: Deal with partial extraction
     if (!product) {
       await this.fetch();
 
@@ -137,6 +136,17 @@ export class CeneoProduct {
 
       this.calculateOverview();
       product = await db.insertProduct(this);
+    }
+
+    if (product.partialExtraction) {
+      await this.fetch();
+
+      if (this.blockedWithCaptcha) {
+        throw new Error('Product page is blocked with captcha');
+      }
+
+      this.calculateOverview();
+      product = await db.updateProduct(product.ceneoProductId, this);
     }
 
     return product;

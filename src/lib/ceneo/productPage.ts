@@ -6,13 +6,15 @@ export class ProductPage {
     review: 'div.user-post.user-post__card.js_product-review',
     product_name: '.product-top__product-info__name',
     next_page: '.pagination__item.pagination__next',
-    page_number: '.pagination__item.active > span'
+    page_number: '.pagination__item.active > span',
+    image: '.js_gallery-media.gallery-carousel__media'
   };
 
   private $: CheerioAPI;
 
   captchaProtected = false;
   name = '';
+  imageUrl: string | null = null;
   reviews: Review[] = [];
   reviewsPage: number | null = null;
   hasNextReviewsPage = false;
@@ -28,6 +30,7 @@ export class ProductPage {
       return;
     }
 
+    this.imageUrl = this.extractProductImageUrl();
     this.reviews = this.extractReviews();
     this.reviewsPage = this.extractReviewsPage();
     this.hasNextReviewsPage = this.extractHasNextReviewsPage();
@@ -37,6 +40,11 @@ export class ProductPage {
   private extractProductName() {
     const $name = this.$(ProductPage.SELECTORS.product_name);
     return $name.text();
+  }
+
+  private extractProductImageUrl() {
+    const $image = this.$(ProductPage.SELECTORS.image);
+    return $image.first().attr('src') ?? null;
   }
 
   private extractReviews() {

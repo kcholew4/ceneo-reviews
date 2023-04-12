@@ -30,7 +30,7 @@
   let selected = defaultSelected();
 
   const filters = writable<{
-    [index: string]: FilterFunction;
+    [filterName: string]: FilterFunction;
   }>({});
 
   const removeFilter = (filterName: string) => {
@@ -115,7 +115,6 @@
           text: value.toString()
         }))}
         on:select={(event) => {
-          console.log('asdfsadf');
           if (event.detail.selectedIds.length === 0) {
             return removeFilter('scores');
           }

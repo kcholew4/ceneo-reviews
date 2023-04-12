@@ -11,6 +11,7 @@ export class CeneoProduct {
 
   id: string;
   name = '';
+  imageUrl: string | null = null;
   reviews: Review[] = [];
 
   reviewsCount = 0;
@@ -87,6 +88,7 @@ export class CeneoProduct {
     }
 
     this.name = productPage.name;
+    this.imageUrl = productPage.imageUrl;
     this.reviews.push(...productPage.reviews);
 
     for (;;) {

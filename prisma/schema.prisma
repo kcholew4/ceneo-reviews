@@ -14,6 +14,7 @@ model Product {
   id                String   @id @default(auto()) @map("_id") @db.ObjectId
   ceneoProductId    String   @unique
   name              String
+  imageUrl          String?
   partialExtraction Boolean
   overview          Overview
   reviews           Review[]

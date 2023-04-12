@@ -9,6 +9,7 @@ const formatProductData = (product: CeneoProduct): Omit<Product, 'id'> => {
   return {
     ceneoProductId: product.id,
     name: product.name,
+    imageUrl: product.imageUrl,
     partialExtraction: product.partialExtraction,
     overview: {
       reviewsCount: product.reviewsCount,
@@ -61,6 +62,7 @@ export const getProductsOverview = async () => {
     select: {
       ceneoProductId: true,
       name: true,
+      imageUrl: true,
       overview: true
     }
   });
